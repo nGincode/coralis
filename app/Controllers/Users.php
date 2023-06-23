@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Users as ModelsUsers;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\RESTful\ResourceController;
+use Ramsey\Uuid\Uuid;
 
 class Users extends ResourceController
 {
@@ -26,12 +27,12 @@ class Users extends ResourceController
      *
      * @return mixed
      */
-    public function show($id = null)
+    public function show($uuid = null)
     {
         $model = new ModelsUsers();
-        $data = $model->find(['id' => $id]);
+        $data = $model->where('uuid', $uuid)->first();
         if (!$data) return $this->failNotFound("Data Not Found");
-        return $this->respond($data[0]);
+        return $this->respond($data);
     }
 
     /**
@@ -42,6 +43,8 @@ class Users extends ResourceController
     public function create()
     {
         helper(['form']);
+        $uuid = Uuid::uuid4();
+
         $rules = [
             'name' => 'required|is_unique[users.name]',
             'email' => 'required|valid_email|is_unique[users.email]',
@@ -53,6 +56,7 @@ class Users extends ResourceController
 
         $data = [
             'name' => $this->request->getVar('name'),
+            'uuid' => $uuid->toString(),
             'password' => password_hash($this->request->getVar('password'), PASSWORD_DEFAULT),
             'email' => $this->request->getVar('email'),
             'img' => null,
@@ -65,7 +69,7 @@ class Users extends ResourceController
             'status' => 201,
             'error' => null,
             'messages' => [
-                'success' => "created successfull"
+                'success' => "created successfull",
             ]
         ];
         return $this->respondCreated($response);
@@ -77,8 +81,14 @@ class Users extends ResourceController
      *
      * @return mixed
      */
-    public function update($id = null)
+    public function update($uuid = null)
     {
+
+        $model = new ModelsUsers();
+        $dataModel = $model->where('uuid', $uuid)->first();
+        if (!$dataModel) return $this->failNotFound('No Data Found');
+        $id = $dataModel['id'];
+
         helper(['form']);
         $rules = [
             'name' => "required|is_unique[users.name,id,{$id}]",
@@ -96,9 +106,6 @@ class Users extends ResourceController
             'img' => null,
             'updated_at' => date('Y-m-d H:i:s')
         ];
-        $model = new ModelsUsers();
-        $findById = $model->find(['id' => $id]);
-        if (!$findById) return $this->failNotFound('No Data Found');
         $model->update($id, $data);
         $response = [
             'status' => 201,
@@ -115,11 +122,13 @@ class Users extends ResourceController
      *
      * @return mixed
      */
-    public function delete($id = null)
+    public function delete($uuid = null)
     {
         $model = new ModelsUsers();
-        $findById = $model->find(['id' => $id]);
-        if (!$findById) return $this->failNotFound('No Data Found');
+        $dataModel = $model->where('uuid', $uuid)->first();
+        if (!$dataModel) return $this->failNotFound('No Data Found');
+        $id = $dataModel['id'];
+
         $model->delete($id);
         $response = [
             'status' => 201,
