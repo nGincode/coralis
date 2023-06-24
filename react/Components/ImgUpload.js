@@ -84,12 +84,13 @@ const ImgUpload = ({ name, src, id, empty }) => {
                             borderRadius: "50%",
                             width: "25px",
                             height: "25px",
-                            padding: "2px 7px",
+                            padding: "0px 9px",
+                            fontWeight: "bold",
                           }}
                           onClick={deleteImageHandler}
                           id="deleteImg"
                         >
-                          <i className="fa fa-trash"></i>
+                          x
                         </div>
                         <img
                           src={src}

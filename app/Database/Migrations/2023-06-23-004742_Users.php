@@ -38,11 +38,17 @@ class Users extends Migration
                 'constraint' => 200,
                 'null' => true,
             ],
+            'email_verified_at' => [
+                'type' => "DATETIME",
+                'null' => true,
+            ],
             'created_at' => [
                 'type' => "DATETIME",
+                'null' => true,
             ],
             'updated_at' => [
                 'type' => "DATETIME",
+                'null' => true,
             ]
         ]);
         $this->forge->addKey('id', true);

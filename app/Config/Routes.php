@@ -36,9 +36,15 @@ $routes->get('/', 'Home::index');
 $routes->post('/api/login', 'Auth::login');
 $routes->post('/api/register', 'Auth::register');
 $routes->get('/api/token', 'Auth::cekToken');
+$routes->post('/api/emailSend', 'Auth::emailSend');
+$routes->get('/api/emailActivation', 'Auth::emailActivation');
+$routes->post('/api/forgotPass', 'Auth::forgotPass');
+$routes->post('/api/resetPass', 'Auth::resetPass');
 
 $routes->group('api', ['filter' => 'auth'], static function ($routes) {
-    $routes->resource('users');
+    $routes->get('users/(:any)', 'Users::get/$1');
+    $routes->post('users/setting/(:any)', 'Users::setting/$1');
+    // $routes->resource('users');
 });
 
 /*

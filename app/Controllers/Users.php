@@ -92,17 +92,12 @@ class Users extends ResourceController
         helper(['form']);
         $rules = [
             'name' => "required|is_unique[users.name,id,{$id}]",
-            'email' => "required|valid_email|is_unique[users.email,id,{$id}]",
-            'password' => 'required|min_length[8]',
-            'passconf' => 'required|matches[password]',
         ];
 
         if (!$this->validate($rules)) return $this->fail($this->validator->getErrors());
 
         $data = [
             'name' => $this->request->getVar('name'),
-            'password' => password_hash($this->request->getVar('password'), PASSWORD_DEFAULT),
-            'email' => $this->request->getVar('email'),
             'img' => null,
             'updated_at' => date('Y-m-d H:i:s')
         ];
@@ -135,6 +130,58 @@ class Users extends ResourceController
             'error' => null,
             'messages' => [
                 'success' => "deleted successfull"
+            ]
+        ];
+        return $this->respond($response);
+    }
+
+
+    public function get($uuid = null)
+    {
+        $model = new ModelsUsers();
+        $data = $model->where('uuid', $uuid)->first();
+        if (!$data) return $this->failNotFound("Data Not Found");
+        return $this->respond($data);
+    }
+
+    public function setting($uuid = null)
+    {
+        $model = new ModelsUsers();
+        $dataModel = $model->where('uuid', $uuid)->first();
+        if (!$dataModel) return $this->failNotFound('No Data Found');
+        $id = $dataModel['id'];
+
+        helper(['form']);
+        $rules = [
+            'name' => "required|is_unique[users.name,id,{$id}]",
+            'img' => "max_size[img, 2046]|mime_in[img, image/png, image/jpg,image/jpeg, image/gif]",
+        ];
+
+        if (!$this->validate($rules)) return $this->fail($this->validator->getErrors());
+        $upload = $this->request->getFile('img');
+        if ($upload->getClientExtension()) {
+            $nameImg = $upload->getRandomName();
+            $upload->move('assets/uploads', $nameImg);
+            $img = 'assets/uploads/' . $nameImg;
+        } else {
+            $img = null;
+            if ($dataModel['img']) {
+                $path = $dataModel['img'];
+                unlink($path);
+            }
+        }
+
+        $data = [
+            'name' => $this->request->getVar('name'),
+            'img' => $img,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+        $model->update($id, $data);
+        $response = [
+            'status' => 201,
+            'error' => null,
+            'messages' => [
+                'success' => "Updated successfull"
             ]
         ];
         return $this->respond($response);
