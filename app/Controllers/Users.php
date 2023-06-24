@@ -164,10 +164,12 @@ class Users extends ResourceController
             $upload->move('assets/uploads', $nameImg);
             $img = 'assets/uploads/' . $nameImg;
         } else {
-            $img = null;
-            if ($dataModel['img']) {
+            if ($dataModel['img'] && $this->request->getVar('imgDel')) {
                 $path = $dataModel['img'];
                 unlink($path);
+                $img = null;
+            } else {
+                $img = $dataModel['img'];
             }
         }
 
